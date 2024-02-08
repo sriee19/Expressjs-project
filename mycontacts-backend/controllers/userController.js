@@ -72,7 +72,13 @@ const loginUser = asyncHandler(async(req,res) =>{
     }
 });
 
+const displayUser=(async(req,res)=>{
+   
+    const userAvailable = await User.find();
+    res.status(200).json(userAvailable);
 
+
+})
 
 //@desc current user info
 //@route POST /api/users/current
@@ -82,4 +88,4 @@ const currentUser = asyncHandler(async(req,res) =>{
     res.json(req.user);
 });
  
-module.exports = {registerUser,loginUser,currentUser};
+module.exports = {registerUser,loginUser,currentUser,displayUser};
