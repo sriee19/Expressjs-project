@@ -110,6 +110,24 @@ const loginUser = asyncHandler(async(req,res) =>{
         }
 });
 
+    //@desc Display specific user info
+    //@route GET /api/users/displayAll
+    //@access private
+
+
+    const getUserById = asyncHandler(async (req, res) => {
+        try {
+            const user = await User.findById(req.params.id);
+            if (user) {
+                res.status(200).json(user);
+            } else {
+                res.status(404).json({ message: "User not found" });
+            }
+        } catch (error) {
+            console.error("Error fetching user:", error);
+            res.status(500).json({ message: "Internal Server Error" });
+        }
+});
 
 
 //@desc current user info
@@ -120,4 +138,4 @@ const currentUser = asyncHandler(async(req,res) =>{
     res.json(req.user);
 });
  
-module.exports = {registerUser,loginUser,currentUser,displayUser,displayUsers};
+module.exports = {registerUser,loginUser,currentUser,displayUser,displayUsers, getUserById};
