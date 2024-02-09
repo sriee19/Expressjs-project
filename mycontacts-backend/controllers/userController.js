@@ -72,13 +72,21 @@ const loginUser = asyncHandler(async(req,res) =>{
     }
 });
 
-const displayUser=(async(req,res)=>{
-   
-    const userAvailable = await User.find();
-    res.status(200).json(userAvailable);
+    const displayUser = async (req, res) => {
+        try {
+            const userAvailable = await User.findOne({username: req.params.username });
+            if (userAvailable) {
+                res.status(200).json(userAvailable);
+            } else {
+                res.status(404).json({ message: "User not found" });
+            }
+        } catch (error) {
+            console.error("Error fetching user:", error);
+            res.status(500).json({ message: "Internal Server Error" });
+        }
+};
 
 
-})
 
 //@desc current user info
 //@route POST /api/users/current
