@@ -150,10 +150,10 @@ const updateUser = asyncHandler(async (req, res) => {
             res.status(404);
             throw new Error("User not found");
         }
-        if (user.id.toString() !== req.user.id) {
-            res.status(403);
-            throw new Error("User doesn't have permission to update other user's information");
-        }
+        // if (user.id.toString() !== req.user.id) {
+        //     res.status(403);
+        //     throw new Error("User doesn't have permission to update other user's information");
+        // }
         const updatedUser = await User.findByIdAndUpdate(
             req.params.id,
             req.body,
@@ -162,6 +162,7 @@ const updateUser = asyncHandler(async (req, res) => {
         res.status(200).json(updatedUser);
     } 
 );
+
 
 //@desc Delete user
 //@route DELETE /api/users/:id
@@ -175,14 +176,20 @@ const deleteUser = asyncHandler(async (req, res) => {
             res.status(404);
             throw new Error("User not found");
         }
-        if (user.id.toString() !== req.user.id) {
-            res.status(403);
-            throw new Error("User doesn't have permission to delete other user's account");
+        // if (user.id.toString() !== req.user.id) {
+        //     res.status(403);
+        //     throw new Error("User doesn't have permission to delete other user's account");
+        // }
+        try {
+            await User.deleteOne({ _id: req.params.id })
+            console.log("User deleted");
+        } catch (error) {
+            console.log("error", error);
         }
-        await User.deleteOne({ _id: req.params.id });
         res.status(200).json(user);
     } 
 );
+
 
 module.exports = { registerUser, loginUser, displayUser, displayUsers, getUserById, updateUser, deleteUser };
 

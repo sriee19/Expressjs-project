@@ -11,10 +11,7 @@ const router = express.Router();
 
 
 router.post("/register",registerUser);
-
-
 router.post("/login",loginUser);
-
 router.get("/display",displayUser);
 router.get("/displays",displayUsers);
 router.get("/getuser/:id", getUserById);
