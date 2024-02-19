@@ -1,5 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const Contact = require("../models/contactModel");
+const {constants} = require("../constants");
 
 //@desc Get all contacts
 //@route GET /api/contacts
@@ -20,7 +21,7 @@ const createContact =asyncHandler(async(req,res)  => {
     const {name,email,phone}=req.body;
     if(!name || !email || !phone)
     {
-        res.status(400);
+        res.status(constants.VALIDATION_ERROR);
         throw new Error("All files are mandatory");
     }
 
@@ -41,7 +42,7 @@ const createContact =asyncHandler(async(req,res)  => {
 const getContact = asyncHandler(async(req,res)  => {
     const contact = await Contact.findById(req.params.id);
     if(!contact){
-        res.status(404);
+        res.status(constants.NOT_FOUND);
         throw new Error("Contact Not found");
     }
     res.status(200).json(contact);
@@ -55,11 +56,11 @@ const getContact = asyncHandler(async(req,res)  => {
 const updateContact = asyncHandler(async(req,res)  => {
     const contact = await Contact.findById(req.params.id);
     if(!contact){
-        res.status(404);
+        res.status(constants.NOT_FOUND);
         throw new Error("Contact Not found");
     }
     if(contact.user_id.toString()!==req.user.id){
-        res.status(403);
+        res.status(constants.FORBIDDEN);
         throw new Error("User don't have permission to update other user contacts");
     }
     const updatedContact = await Contact.findByIdAndUpdate
@@ -80,11 +81,11 @@ const deleteContact= asyncHandler(async(req,res)  => {
     const contact = await Contact.findById(req.params.id);
     console.log(contact);
     if(!contact){
-        res.status(404);
+        res.status(constants.NOT_FOUND);
         throw new Error("Contact Not found");
     }
     if(contact.user_id.toString()!==req.user.id){
-        res.status(403);
+        res.status(constants.FORBIDDEN);
         throw new Error("User don't have permission to update other user contacts");
     }
     await Contact.deleteOne({_id: req.params.id});
