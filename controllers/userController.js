@@ -2,6 +2,7 @@ const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/userModel");
+const {constants} = require("../constants");
 //@desc Register a user
 //@route POST /api/users/register
 //@access public
@@ -9,12 +10,12 @@ const User = require("../models/userModel");
 const registerUser = asyncHandler(async(req,res) =>{
     const {username, email, password} =req.body;
     if(!username || !email|| !password){
-        res.status(400);
+        res.status(constants.VALIDATION_ERROR);
         throw new Error("All fields are mandatory");
     }
     const userAvailable = await User.findOne({email});
     if(userAvailable){
-        res.status(400);
+        res.status(constants.VALIDATION_ERROR);
         throw new Error("User already registered");
     };
 
@@ -35,7 +36,7 @@ const registerUser = asyncHandler(async(req,res) =>{
         });
     }
     else{
-        res.status(400);
+        res.status(constants.VALIDATION_ERROR);
         throw new Error("User data is not valid");
     }
     res.json({message: "Register the user"});
@@ -48,7 +49,7 @@ const registerUser = asyncHandler(async(req,res) =>{
 const loginUser = asyncHandler(async(req,res) =>{
     const {email, password} = req.body;
     if(!email || !password) {
-        res.status(400);
+        res.status(constants.VALIDATION_ERROR);
         throw new Error ("All files are mandatory");
     }
     const user = await User.findOne({email});
@@ -67,7 +68,7 @@ const loginUser = asyncHandler(async(req,res) =>{
         );
         res.status(200).json({accessToken});
     }else{
-        res.status(401);
+        res.status(constants.VALIDATION_ERROR);
         throw new Error("email or password is not valid");
     }
 });
@@ -83,11 +84,11 @@ const loginUser = asyncHandler(async(req,res) =>{
                 const usernames = allUsers.map(user => user.username);
                 res.status(200).json(usernames);
             } else {
-                res.status(404).json({ message: "No users found" });
+                res.status(constants.NOT_FOUND).json({ message: "No users found" });
             }
         } catch (error) {
             console.error("Error fetching users:", error);
-            res.status(500).json({ message: "Internal Server Error" });
+            res.status(constants.SERVER_ERROR).json({ message: "Internal Server Error" });
         }
 });
     
@@ -102,11 +103,11 @@ const loginUser = asyncHandler(async(req,res) =>{
             if (allUsers.length > 0) {
                 res.status(200).json(allUsers);
             } else {
-                res.status(404).json({ message: "No users found" });
+                res.status(constants.NOT_FOUND).json({ message: "No users found" });
             }
         } catch (error) {
             console.error("Error fetching users:", error);
-            res.status(500).json({ message: "Internal Server Error" });
+            res.status(constants.SERVER_ERROR).json({ message: "Internal Server Error" });
         }
 });
 
@@ -121,11 +122,11 @@ const loginUser = asyncHandler(async(req,res) =>{
             if (user) {
                 res.status(200).json(user);
             } else {
-                res.status(404).json({ message: "User not found" });
+                res.status(constants.NOT_FOUND).json({ message: "User not found" });
             }
         } catch (error) {
             console.error("Error fetching user:", error);
-            res.status(500).json({ message: "Internal Server Error" });
+            res.status(constants.SERVER_ERROR).json({ message: "Internal Server Error" });
         }
 });
 
@@ -147,7 +148,7 @@ const updateUser = asyncHandler(async (req, res) => {
 
         const user = await User.findById(req.params.id);
         if (!user) {
-            res.status(404);
+            res.status(constants.NOT_FOUND);
             throw new Error("User not found");
         }
         // if (user.id.toString() !== req.user.id) {
@@ -172,7 +173,7 @@ const deleteUser = asyncHandler(async (req, res) => {
     const user = await User.findById(req.params.id);
 
     if (!user) {
-        res.status(404)
+        res.status(constants.NOT_FOUND)
         throw new Error("Contact not found")
     }
 
