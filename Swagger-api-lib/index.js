@@ -1,6 +1,7 @@
-const express =require(`express`);
+const express = require(`express`);
 const cors = require (`cors`);
 const morgan = require(`morgan`);
+console.log(require.resolve('lowdb'));
 const low = require(`lowdb`);
 
 const PORT  = process.env.PORT || 4000;
