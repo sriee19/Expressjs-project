@@ -22,6 +22,8 @@ router.get('/', (req, res) => {
   res.send('Get all users');
 });
 
+const users = [];
+
 /**
  * @swagger
  * /users/{id}:
@@ -38,9 +40,74 @@ router.get('/', (req, res) => {
  *     responses:
  *       200:
  *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 username:
+ *                   type: string
+ *                 email:
+ *                   type: string
  */
 router.get('/:id', (req, res) => {
-  res.send(`Get user with ID ${req.params.id}`);
+    const userId = parseInt(req.params.id);
+    console.log(`Requested User id:`, userId);
+    const user = users.find((user) => user.id === userId);
+  
+    if (user) {
+        console.log('Found user:', user);
+      res.status(200).json(user);
+    } else {
+        console.log('User not found');
+      res.status(404).json({ message: 'User not found' });
+    }
+});
+/**
+ * @swagger
+ * /users/register:
+ *   post:
+ *     summary: Register user
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: User registered successfully
+ */
+function generateUserId() {
+    return new Date().getTime().toString();
+}
+
+router.post('/register', (req, res) => {
+    const userId = generateUserId();
+    const userData = {
+        id: userId,
+        username: req.body.username,
+        email: req.body.email,
+        password: req.body.password
+    };
+    users.push(userData);
+    // console.log('All registered users:', users);
+
+    res.status(200).json({
+        id: userId,
+        username: req.body.username,  
+        message: 'User registered successfully',
+    });
 });
 
 /**
@@ -65,36 +132,24 @@ router.get('/:id', (req, res) => {
  *         description: Successful login
  */
 router.post('/login', (req, res) => {
-  res.send('User login');
+    const { username, password } = req.body;
+    // console.log('Received credentials:', username, password);
+    // console.log('All registered users:', users);
+    const user = users.find(u => u.username === username && u.password === password);
+    // console.log('Matching user:', user);
+    if (user) {
+        res.status(200).json({
+            id: user.id,
+            username: user.username,
+            message: 'Successful login',
+        });
+    } else {
+        res.status(401).json({ message: 'Invalid credentials' });
+    }
 });
 
-/**
- * @swagger
- * /users/register:
- *   post:
- *     summary: Register user
- *     tags: [Users]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               username:
- *                 type: string
- *               password:
- *                 type: string
- *               email:
- *                 type: string
- *     responses:
- *       200:
- *         description: User registered successfully
- */
-router.post('/register', (req, res) => {
-  res.send('User registered');
-});
 
+  
 /**
  * @swagger
  * /users/update/{id}:
@@ -144,6 +199,6 @@ router.put('/update/:id', (req, res) => {
 router.delete('/delete/:id', (req, res) => {
   res.send(`Delete user with ID ${req.params.id}`);
 });
-console.log('Loaded route file: users.js');
+// console.log('Loaded route file: users.js');
 
 module.exports = router;
