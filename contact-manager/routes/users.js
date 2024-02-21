@@ -22,6 +22,8 @@ router.get('/', (req, res) => {
   res.send('Get all users');
 });
 
+const users = [];
+
 /**
  * @swagger
  * /users/{id}:
@@ -38,9 +40,27 @@ router.get('/', (req, res) => {
  *     responses:
  *       200:
  *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 username:
+ *                   type: string
+ *                 email:
+ *                   type: string
  */
 router.get('/:id', (req, res) => {
-  res.send(`Get user with ID ${req.params.id}`);
+    const userId = parseInt(req.params.id);
+    const user = users.find((user) => user.id === userId);
+  
+    if (user) {
+      res.status(200).json(user);
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
 });
 
 /**
@@ -91,10 +111,26 @@ router.post('/login', (req, res) => {
  *       200:
  *         description: User registered successfully
  */
+function generateUserId() {
+    return new Date().getTime().toString();
+  }
 router.post('/register', (req, res) => {
-  res.send('User registered');
-});
+    const userId = generateUserId();
+    const userData = {
+      id: userId,
+      username: req.body.username,
+      email: req.body.email,
+      password:req.body.password
+    };
+    users.push(userData);
+  
+    res.status(200).json({
+      id: userId,
+      message: 'User registered successfully',
+    });
+  });
 
+  
 /**
  * @swagger
  * /users/update/{id}:
