@@ -53,15 +53,16 @@ const users = [];
  *                   type: string
  */
 router.get('/:id', (req, res) => {
-    const userId = parseInt(req.params.id);
-    console.log(`Requested User id:`, userId);
+    const userId = req.params.id.toString();
+    // console.log(`Requested User id:`, userId);
+    // console.log('All registered users:', users); 
     const user = users.find((user) => user.id === userId);
   
     if (user) {
-        console.log('Found user:', user);
+        // console.log('Found user:', user);
       res.status(200).json(user);
     } else {
-        console.log('User not found');
+        // console.log('User not found');
       res.status(404).json({ message: 'User not found' });
     }
 });
