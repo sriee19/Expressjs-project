@@ -7,6 +7,7 @@
 
 const express = require('express');
 const router = express.Router();
+const users = require('../data/users');
 
 /**
  * @swagger
@@ -17,12 +18,25 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   username:
+ *                     type: string
+ *                   email:
+ *                     type: string
  */
 router.get('/', (req, res) => {
-  res.send('Get all users');
+  res.status(200).json(users);
 });
 
-const users = [];
+// const users = [];
 
 /**
  * @swagger
@@ -55,7 +69,7 @@ const users = [];
 router.get('/:id', (req, res) => {
     const userId = req.params.id.toString();
     // console.log(`Requested User id:`, userId);
-    // console.log('All registered users:', users); 
+    console.log('All registered users:', users); 
     const user = users.find((user) => user.id === userId);
   
     if (user) {
