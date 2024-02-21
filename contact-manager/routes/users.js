@@ -54,11 +54,14 @@ const users = [];
  */
 router.get('/:id', (req, res) => {
     const userId = parseInt(req.params.id);
+    console.log(`Requested User id:`, userId);
     const user = users.find((user) => user.id === userId);
   
     if (user) {
+        console.log('Found user:', user);
       res.status(200).json(user);
     } else {
+        console.log('User not found');
       res.status(404).json({ message: 'User not found' });
     }
 });
@@ -98,7 +101,7 @@ router.post('/register', (req, res) => {
         password: req.body.password
     };
     users.push(userData);
-    console.log('All registered users:', users);
+    // console.log('All registered users:', users);
 
     res.status(200).json({
         id: userId,
@@ -130,10 +133,10 @@ router.post('/register', (req, res) => {
  */
 router.post('/login', (req, res) => {
     const { username, password } = req.body;
-    console.log('Received credentials:', username, password);
+    // console.log('Received credentials:', username, password);
     // console.log('All registered users:', users);
     const user = users.find(u => u.username === username && u.password === password);
-    console.log('Matching user:', user);
+    // console.log('Matching user:', user);
     if (user) {
         res.status(200).json({
             id: user.id,
