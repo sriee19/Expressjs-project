@@ -67,9 +67,10 @@ router.get('/:id', (req, res) => {
  *         description: Contact created successfully
  */
 router.post('/', (req, res) => {
-    res.send('Create a new contact');
-  });
-  /**
+  res.send('Create a new contact');
+});
+
+/**
  * @swagger
  * /contacts/{id}:
  *   put:
@@ -100,28 +101,30 @@ router.post('/', (req, res) => {
  *         description: Contact updated successfully
  */
 router.put('/:id', (req, res) => {
-    res.send(`Update contact with ID ${req.params.id}`);
-  });
-  /**
-  * @swagger
-  * /contacts/{id}:
-  *   delete:
-  *     summary: Delete a contact by ID
-  *     tags: [Contacts]
-  *     parameters:
-  *       - in: path
-  *         name: id
-  *         required: true
-  *         description: Contact ID
-  *         schema:
-  *           type: integer
-  *     responses:
-  *       200:
-  *         description: Contact deleted successfully
-  */
- router.delete('/:id', (req, res) => {
-   res.send(`Delete contact with ID ${req.params.id}`);
- });
+  res.send(`Update contact with ID ${req.params.id}`);
+});
+
+/**
+ * @swagger
+ * /contacts/{id}:
+ *   delete:
+ *     summary: Delete a contact by ID
+ *     tags: [Contacts]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Contact ID
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Contact deleted successfully
+ */
+router.delete('/:id', (req, res) => {
+  res.send(`Delete contact with ID ${req.params.id}`);
+});
+
 console.log('Loaded route file: contacts.js');
 
 module.exports = router;
