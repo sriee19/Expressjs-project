@@ -11,77 +11,6 @@ const users = require('../data/users');
 
 /**
  * @swagger
- * /users:
- *   get:
- *     summary: Get all users
- *     tags: [Users]
- *     responses:
- *       200:
- *         description: Successful response
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: integer
- *                   username:
- *                     type: string
- *                   email:
- *                     type: string
- */
-router.get('/', (req, res) => {
-  res.status(200).json(users);
-});
-
-// const users = [];
-
-/**
- * @swagger
- * /users/{id}:
- *   get:
- *     summary: Get a user by ID
- *     tags: [Users]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: User ID
- *         schema:
- *           type: integer
- *     responses:
- *       200:
- *         description: Successful response
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: integer
- *                 username:
- *                   type: string
- *                 email:
- *                   type: string
- */
-router.get('/:id', (req, res) => {
-    const userId = req.params.id.toString();
-    // console.log(`Requested User id:`, userId);
-    console.log('All registered users:', users); 
-    const user = users.find((user) => user.id === userId);
-  
-    if (user) {
-        // console.log('Found user:', user);
-      res.status(200).json(user);
-    } else {
-        // console.log('User not found');
-      res.status(404).json({ message: 'User not found' });
-    }
-});
-/**
- * @swagger
  * /users/register:
  *   post:
  *     summary: Register user
@@ -164,6 +93,77 @@ router.post('/login', (req, res) => {
 });
 
 
+/**
+ * @swagger
+ * /users:
+ *   get:
+ *     summary: Get all users
+ *     tags: [Users]
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   username:
+ *                     type: string
+ *                   email:
+ *                     type: string
+ */
+router.get('/', (req, res) => {
+  res.status(200).json(users);
+});
+
+// const users = [];
+
+/**
+ * @swagger
+ * /users/{id}:
+ *   get:
+ *     summary: Get a user by ID
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: User ID
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 username:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ */
+router.get('/:id', (req, res) => {
+    const userId = req.params.id.toString();
+    // console.log(`Requested User id:`, userId);
+    // console.log('All registered users:', users); 
+    const user = users.find((user) => user.id === userId);
+  
+    if (user) {
+        // console.log('Found user:', user);
+      res.status(200).json(user);
+    } else {
+        // console.log('User not found');
+      res.status(404).json({ message: 'User not found' });
+    }
+});
   
 /**
  * @swagger
