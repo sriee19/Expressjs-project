@@ -145,4 +145,6 @@ router.put('/update/:id', (req, res) => {
 router.delete('/delete/:id', (req, res) => {
     res.send(`Delete user with ID ${req.params.id}`);
   });
+console.log('Loaded route file: users.js');
+
   module.exports = router;

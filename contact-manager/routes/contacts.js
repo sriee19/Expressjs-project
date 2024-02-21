@@ -122,5 +122,6 @@ router.put('/:id', (req, res) => {
  router.delete('/:id', (req, res) => {
    res.send(`Delete contact with ID ${req.params.id}`);
  });
- 
+console.log('Loaded route file: contacts.js');
+
 module.exports = router;
