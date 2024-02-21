@@ -11,6 +11,33 @@ const router = express.Router();
 /**
  * @swagger
  * /contacts:
+ *   post:
+ *     summary: Create a new contact
+ *     tags: [Contacts]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Contact created successfully
+ */
+router.post('/', (req, res) => {
+    res.send('Create a new contact');
+  });
+  
+/**
+ * @swagger
+ * /contacts:
  *   get:
  *     summary: Get all contacts
  *     tags: [Contacts]
@@ -41,33 +68,6 @@ router.get('/', (req, res) => {
  */
 router.get('/:id', (req, res) => {
   res.send(`Get contact with ID ${req.params.id}`);
-});
-
-/**
- * @swagger
- * /contacts:
- *   post:
- *     summary: Create a new contact
- *     tags: [Contacts]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *               email:
- *                 type: string
- *               phone:
- *                 type: string
- *     responses:
- *       200:
- *         description: Contact created successfully
- */
-router.post('/', (req, res) => {
-  res.send('Create a new contact');
 });
 
 /**

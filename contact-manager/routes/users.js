@@ -11,77 +11,6 @@ const users = require('../data/users');
 
 /**
  * @swagger
- * /users:
- *   get:
- *     summary: Get all users
- *     tags: [Users]
- *     responses:
- *       200:
- *         description: Successful response
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: integer
- *                   username:
- *                     type: string
- *                   email:
- *                     type: string
- */
-router.get('/', (req, res) => {
-  res.status(200).json(users);
-});
-
-// const users = [];
-
-/**
- * @swagger
- * /users/{id}:
- *   get:
- *     summary: Get a user by ID
- *     tags: [Users]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: User ID
- *         schema:
- *           type: integer
- *     responses:
- *       200:
- *         description: Successful response
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: integer
- *                 username:
- *                   type: string
- *                 email:
- *                   type: string
- */
-router.get('/:id', (req, res) => {
-    const userId = req.params.id.toString();
-    // console.log(`Requested User id:`, userId);
-    console.log('All registered users:', users); 
-    const user = users.find((user) => user.id === userId);
-  
-    if (user) {
-        // console.log('Found user:', user);
-      res.status(200).json(user);
-    } else {
-        // console.log('User not found');
-      res.status(404).json({ message: 'User not found' });
-    }
-});
-/**
- * @swagger
  * /users/register:
  *   post:
  *     summary: Register user
@@ -164,8 +93,78 @@ router.post('/login', (req, res) => {
 });
 
 
-  
 /**
+ * @swagger
+ * /users:
+ *   get:
+ *     summary: Get all users
+ *     tags: [Users]
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   username:
+ *                     type: string
+ *                   email:
+ *                     type: string
+ */
+router.get('/', (req, res) => {
+  res.status(200).json(users);
+});
+
+// const users = [];
+
+/**
+ * @swagger
+ * /users/{id}:
+ *   get:
+ *     summary: Get a user by ID
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: User ID
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 username:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ */
+router.get('/:id', (req, res) => {
+    const userId = req.params.id.toString();
+    // console.log(`Requested User id:`, userId);
+    // console.log('All registered users:', users); 
+    const user = users.find((user) => user.id === userId);
+  
+    if (user) {
+        // console.log('Found user:', user);
+      res.status(200).json(user);
+    } else {
+        // console.log('User not found');
+      res.status(404).json({ message: 'User not found' });
+    }
+});
+ /**
  * @swagger
  * /users/update/{id}:
  *   put:
@@ -185,15 +184,45 @@ router.post('/login', (req, res) => {
  *           schema:
  *             type: object
  *             properties:
- *               // Include properties for update
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               email:
+ *                 type: string
  *     responses:
  *       200:
  *         description: User updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 username:
+ *                   type: string
+ *                 email:
+ *                   type: string
  */
 router.put('/update/:id', (req, res) => {
-  res.send(`Update user with ID ${req.params.id}`);
-});
+const userId = req.params.id.toString();
+//  console.log(`Requested User id:`, userId);
+    // console.log('All registered users:', users); 
+const userIndex = users.findIndex((user)=>user.id===userId);
 
+if(userIndex !== -1){
+    users[userIndex].username = req.body.username || users[userIndex].username;
+    users[userIndex].password = req.body.password || users[userIndex].password;
+    users[userIndex].email = req.body.email || users[userIndex].email;
+
+    res.status(200).json(users[userIndex]);
+    //  console.log('Found user:', users);
+} else{
+    res.status(404).json({message: `User not found`});
+    //   console.log('User not found');
+}
+});
 /**
  * @swagger
  * /users/delete/{id}:
@@ -210,9 +239,28 @@ router.put('/update/:id', (req, res) => {
  *     responses:
  *       200:
  *         description: User deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
  */
 router.delete('/delete/:id', (req, res) => {
-  res.send(`Delete user with ID ${req.params.id}`);
+const userId = req.params.id.toString();
+//  console.log(`Requested User id:`, userId);
+    // console.log('All registered users:', users); 
+const userIndex = users.findIndex((user)=>user.id===userId);
+
+if(userIndex !== -1){
+    const deleteUser = users.splice(userIndex, 1);
+    res.status(200).json({message:`User ${userId} deleted successfully`,deleteUser});
+ //  console.log('Found user:', users);
+} else{
+    res.status(404).json({message:`User not found`});
+        //   console.log('User not found');
+}
 });
 // console.log('Loaded route file: users.js');
 
