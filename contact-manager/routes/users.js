@@ -1,9 +1,38 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
-const { createUser, getUserByUsernameAndPassword, getUserById, updateUser, deleteUser } = require('../controllers/userController');
+const users = require('../data/users');
 
-const JWT_SECRET_KEY = 'sanjana123';
+const JWT_SECRET_KEY = 'sanjana123'; // Replace with your actual secret key
+
+/**
+ * Middleware to authenticate the token.
+ * Extracts the user information from the token and adds it to the request object.
+ */
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
+  jwt.verify(token, JWT_SECRET_KEY, (err, decoded) => {
+    if (err) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+
+    req.user = decoded;  // Set decoded user object to req.user
+    next();
+  });
+}
+
+/**
+ * @swagger
+ * tags:
+ *   name: Users
+ *   description: API endpoints for managing users
+ */
 
 /**
  * @swagger
@@ -28,19 +57,25 @@ const JWT_SECRET_KEY = 'sanjana123';
  *       200:
  *         description: User registered successfully
  */
-router.post('/register', async (req, res) => {
-  try {
-    const { username, email, password } = req.body;
-    const user = await createUser(username, email, password);
-    res.status(200).json({
-      id: user.id,
-      username: user.username,
-      message: 'User registered successfully',
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
-  }
+function generateUserId() {
+  return new Date().getTime().toString();
+}
+
+router.post('/register', (req, res) => {
+  const userId = generateUserId();
+  const userData = {
+    id: userId,
+    username: req.body.username,
+    email: req.body.email,
+    password: req.body.password
+  };
+  users.push(userData);
+
+  res.status(200).json({
+    id: userId,
+    username: req.body.username,
+    message: 'User registered successfully',
+  });
 });
 
 /**
@@ -64,28 +99,21 @@ router.post('/register', async (req, res) => {
  *       200:
  *         description: Successful login
  */
-router.post('/login', async (req, res) => {
-  try {
-    const { username, password } = req.body;
-    const user = await getUserByUsernameAndPassword(username, password);
+router.post('/login', (req, res) => {
+  const { username, password } = req.body;
+  const user = users.find(u => u.username === username && u.password === password);
 
-    if (user) {
-      const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET_KEY, {
-        expiresIn: '1h',
-      });
+  if (user) {
+    const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET_KEY, { expiresIn: '1h' });
 
-      res.status(200).json({
-        id: user.id,
-        username: user.username,
-        token: token,
-        message: 'Successful login',
-      });
-    } else {
-      res.status(401).json({ message: 'Invalid credentials' });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.status(200).json({
+      id: user.id,
+      username: user.username,
+      token: token,
+      message: 'Successful login',
+    });
+  } else {
+    res.status(401).json({ message: 'Invalid credentials' });
   }
 });
 
@@ -106,20 +134,14 @@ router.post('/login', async (req, res) => {
  *                 type: object
  *                 properties:
  *                   id:
- *                     type: integer
+ *                     type: string
  *                   username:
  *                     type: string
  *                   email:
  *                     type: string
  */
-router.get('/', async (req, res) => {
-  try {
-    const users = await getAllUsers();
-    res.status(200).json(users);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
-  }
+router.get('/', (req, res) => {
+  res.status(200).json(users);
 });
 
 /**
@@ -134,7 +156,7 @@ router.get('/', async (req, res) => {
  *         required: true
  *         description: User ID
  *         schema:
- *           type: integer
+ *           type: string
  *     responses:
  *       200:
  *         description: Successful response
@@ -144,25 +166,20 @@ router.get('/', async (req, res) => {
  *               type: object
  *               properties:
  *                 id:
- *                   type: integer
+ *                   type: string
  *                 username:
  *                   type: string
  *                 email:
  *                   type: string
  */
-router.get('/:id', async (req, res) => {
-  try {
-    const userId = req.params.id;
-    const user = await getUserById(userId);
+router.get('/:id', (req, res) => {
+  const userId = req.params.id.toString();
+  const user = users.find((user) => user.id === userId);
 
-    if (user) {
-      res.status(200).json(user);
-    } else {
-      res.status(404).json({ message: 'User not found' });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+  if (user) {
+    res.status(200).json(user);
+  } else {
+    res.status(404).json({ message: 'User not found' });
   }
 });
 
@@ -178,7 +195,7 @@ router.get('/:id', async (req, res) => {
  *         required: true
  *         description: User ID
  *         schema:
- *           type: integer
+ *           type: string
  *     requestBody:
  *       required: true
  *       content:
@@ -201,26 +218,24 @@ router.get('/:id', async (req, res) => {
  *               type: object
  *               properties:
  *                 id:
- *                   type: integer
+ *                   type: string
  *                 username:
  *                   type: string
  *                 email:
  *                   type: string
  */
-router.put('/update/:id', async (req, res) => {
-  try {
-    const userId = req.params.id;
-    const { username, password, email } = req.body;
-    const updatedUser = await updateUser(userId, username, password, email);
+router.put('/update/:id', (req, res) => {
+  const userId = req.params.id.toString();
+  const userIndex = users.findIndex((user) => user.id === userId);
 
-    if (updatedUser) {
-      res.status(200).json(updatedUser);
-    } else {
-      res.status(404).json({ message: 'User not found' });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+  if (userIndex !== -1) {
+    users[userIndex].username = req.body.username || users[userIndex].username;
+    users[userIndex].password = req.body.password || users[userIndex].password;
+    users[userIndex].email = req.body.email || users[userIndex].email;
+
+    res.status(200).json(users[userIndex]);
+  } else {
+    res.status(404).json({ message: 'User not found' });
   }
 });
 
@@ -236,7 +251,7 @@ router.put('/update/:id', async (req, res) => {
  *         required: true
  *         description: User ID
  *         schema:
- *           type: integer
+ *           type: string
  *     responses:
  *       200:
  *         description: User deleted successfully
@@ -248,19 +263,15 @@ router.put('/update/:id', async (req, res) => {
  *                 message:
  *                   type: string
  */
-router.delete('/delete/:id', async (req, res) => {
-  try {
-    const userId = req.params.id;
-    const deleteUser = await deleteUser(userId);
+router.delete('/delete/:id', (req, res) => {
+  const userId = req.params.id.toString();
+  const userIndex = users.findIndex((user) => user.id === userId);
 
-    if (deleteUser) {
-      res.status(200).json({ message: `User ${userId} deleted successfully`, deleteUser });
-    } else {
-      res.status(404).json({ message: 'User not found' });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+  if (userIndex !== -1) {
+    const deleteUser = users.splice(userIndex, 1);
+    res.status(200).json({ message: `User ${userId} deleted successfully`, deleteUser });
+  } else {
+    res.status(404).json({ message: `User not found` });
   }
 });
 

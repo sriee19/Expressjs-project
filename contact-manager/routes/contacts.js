@@ -1,4 +1,5 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
 const router = express.Router();
 const {
   createContact,
@@ -7,6 +8,37 @@ const {
   updateContact,
   deleteContact,
 } = require('../controllers/contactController');
+
+const JWT_SECRET_KEY = 'sanjana123'; // Replace with your actual secret key
+
+/**
+ * Middleware to authenticate the token.
+ * Extracts the user information from the token and adds it to the request object.
+ */
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
+  jwt.verify(token, JWT_SECRET_KEY, (err, decoded) => {
+    if (err) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+
+    req.user = decoded;  // Set decoded user object to req.user
+    next();
+  });
+}
+
+/**
+ * @swagger
+ * tags:
+ *   name: Contacts
+ *   description: API endpoints for managing contacts
+ */
 
 /**
  * @swagger
@@ -31,7 +63,7 @@ const {
  *       200:
  *         description: Contact created successfully
  */
-router.post('/', async (req, res) => {
+router.post('/', authenticateToken, async (req, res) => {
   try {
     const { name, email, phone } = req.body;
     const userId = req.user.userId; // Extracted from the token during authentication
@@ -73,7 +105,7 @@ router.post('/', async (req, res) => {
  *                   phone:
  *                     type: string
  */
-router.get('/', async (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId; // Extracted from the token during authentication
     const contacts = await getContactsForUser(userId);
@@ -115,7 +147,7 @@ router.get('/', async (req, res) => {
  *                 phone:
  *                   type: string
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId; // Extracted from the token during authentication
     const contactId = req.params.id;
@@ -162,7 +194,7 @@ router.get('/:id', async (req, res) => {
  *       200:
  *         description: Contact updated successfully
  */
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId; // Extracted from the token during authentication
     const contactId = req.params.id;
@@ -198,7 +230,7 @@ router.put('/:id', async (req, res) => {
  *       200:
  *         description: Contact deleted successfully
  */
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId; // Extracted from the token during authentication
     const contactId = req.params.id;
