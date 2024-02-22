@@ -1,13 +1,12 @@
-/**
- * @swagger
- * tags:
- *   name: Contacts
- *   description: API endpoints for managing contacts
- */
 const express = require('express');
 const router = express.Router();
-const users = require('../data/users');
-// const contacts = require('../data/contacts');
+const {
+  createContact,
+  getContactsForUser,
+  getContactById,
+  updateContact,
+  deleteContact,
+} = require('../controllers/contactController');
 
 /**
  * @swagger
@@ -32,44 +31,28 @@ const users = require('../data/users');
  *       200:
  *         description: Contact created successfully
  */
-router.post('/', (req, res) => {
-  const contactData = {
-    name: req.body.name,
-    email: req.body.email,
-    phone: req.body.phone,
-  };
+router.post('/', async (req, res) => {
+  try {
+    const { name, email, phone } = req.body;
+    const userId = req.user.userId; // Extracted from the token during authentication
 
-  const defaultUserId = "sanjana123";
-  let user = users.find((user) => user.id === defaultUserId);
+    const contact = await createContact(userId, name, email, phone);
 
-  if (!user) {
-    user = {
-      id: defaultUserId,
-      contacts: [],
-    };
-    users.push(user);
+    res.status(200).json({
+      message: 'Contact created successfully',
+      contact: contact,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
-
-  // if (!user.contacts) {
-  //   user.contacts = [];
-  // }
-
-  const contactId = new Date().getTime().toString();
-  const newContact = { id: contactId, ...contactData };
-  user.contacts.push(newContact);
-
-  res.status(200).json({
-    message: 'Contact created successfully',
-    contact: newContact,
-  });
 });
-
 
 /**
  * @swagger
  * /contacts:
  *   get:
- *     summary: Get all contacts
+ *     summary: Get all contacts for the logged-in user
  *     tags: [Contacts]
  *     responses:
  *       200:
@@ -90,14 +73,15 @@ router.post('/', (req, res) => {
  *                   phone:
  *                     type: string
  */
-router.get('/', (req, res) => {
-  const defaultUserId = "sanjana123";
-  const user = users.find((user) => user.id === defaultUserId);
+router.get('/', async (req, res) => {
+  try {
+    const userId = req.user.userId; // Extracted from the token during authentication
+    const contacts = await getContactsForUser(userId);
 
-  if (user && user.contacts) {
-    res.status(200).json(user.contacts);
-  } else {
-    res.status(404).json({ message: 'No contacts found' });
+    res.status(200).json(contacts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 });
 
@@ -131,20 +115,20 @@ router.get('/', (req, res) => {
  *                 phone:
  *                   type: string
  */
-router.get('/:id', (req, res) => {
-  const defaultUserId = "sanjana123";
-  const user = users.find((user) => user.id === defaultUserId);
-
-  if (user) {
-    const contact = user.contacts.find((contact) => contact.id === req.params.id);
+router.get('/:id', async (req, res) => {
+  try {
+    const userId = req.user.userId; // Extracted from the token during authentication
+    const contactId = req.params.id;
+    const contact = await getContactById(userId, contactId);
 
     if (contact) {
       res.status(200).json(contact);
     } else {
       res.status(404).json({ message: 'Contact not found' });
     }
-  } else {
-    res.status(404).json({ message: 'User not found' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 });
 
@@ -160,7 +144,7 @@ router.get('/:id', (req, res) => {
  *         required: true
  *         description: Contact ID
  *         schema:
- *           type: integer
+ *           type: string
  *     requestBody:
  *       required: true
  *       content:
@@ -178,31 +162,24 @@ router.get('/:id', (req, res) => {
  *       200:
  *         description: Contact updated successfully
  */
-router.put('/:id', (req, res) => {
-  const contactId = req.params.id;
-  const updatedContactData = {
-    name: req.body.name,
-    email: req.body.email,
-    phone: req.body.phone,
-  };
+router.put('/:id', async (req, res) => {
+  try {
+    const userId = req.user.userId; // Extracted from the token during authentication
+    const contactId = req.params.id;
+    const { name, email, phone } = req.body;
 
-  const defaultUserId = "sanjana123";
-  const user = users.find((user) => user.id === defaultUserId);
+    const updatedContact = await updateContact(userId, contactId, name, email, phone);
 
-  if (user && user.contacts) {
-    const index = user.contacts.findIndex((contact) => contact.id === contactId);
-
-    if (index !== -1) {
-      user.contacts[index] = { id: contactId, ...updatedContactData };
-      res.status(200).json({ message: 'Contact updated successfully', contact: user.contacts[index] });
+    if (updatedContact) {
+      res.status(200).json({ message: 'Contact updated successfully', contact: updatedContact });
     } else {
       res.status(404).json({ message: 'Contact not found' });
     }
-  } else {
-    res.status(404).json({ message: 'User not found' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 });
-
 
 /**
  * @swagger
@@ -216,30 +193,26 @@ router.put('/:id', (req, res) => {
  *         required: true
  *         description: Contact ID
  *         schema:
- *           type: integer
+ *           type: string
  *     responses:
  *       200:
  *         description: Contact deleted successfully
  */
-router.delete('/:id', (req, res) => {
-  const contactId = req.params.id;
+router.delete('/:id', async (req, res) => {
+  try {
+    const userId = req.user.userId; // Extracted from the token during authentication
+    const contactId = req.params.id;
+    const deletedContact = await deleteContact(userId, contactId);
 
-  const defaultUserId = "sanjana123";
-  const user = users.find((user) => user.id === defaultUserId);
-
-  if (user && user.contacts) {
-    const index = user.contacts.findIndex((contact) => contact.id === contactId);
-
-    if (index !== -1) {
-      const deletedContact = user.contacts.splice(index, 1);
+    if (deletedContact) {
       res.status(200).json({ message: 'Contact deleted successfully', contact: deletedContact });
     } else {
       res.status(404).json({ message: 'Contact not found' });
     }
-  } else {
-    res.status(404).json({ message: 'User not found' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 });
-// console.log('Loaded route file: contacts.js');
 
 module.exports = router;

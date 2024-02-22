@@ -1,16 +1,10 @@
-/**
- * @swagger
- * tags:
- *   name: Users
- *   description: API endpoints for managing users
- */
-
 const express = require('express');
-const jwt = require(`jsonwebtoken`);
+const jwt = require('jsonwebtoken');
 const router = express.Router();
-const users = require('../data/users');
+const { createUser, getUserByUsernameAndPassword, getUserById, updateUser, deleteUser } = require('../controllers/userController');
 
-const JWT_SECRET_KEY = `sanjana123`;
+const JWT_SECRET_KEY = 'sanjana123';
+
 /**
  * @swagger
  * /users/register:
@@ -34,26 +28,19 @@ const JWT_SECRET_KEY = `sanjana123`;
  *       200:
  *         description: User registered successfully
  */
-function generateUserId() {
-    return new Date().getTime().toString();
-}
-
-router.post('/register', (req, res) => {
-    const userId = generateUserId();
-    const userData = {
-        id: userId,
-        username: req.body.username,
-        email: req.body.email,
-        password: req.body.password
-    };
-    users.push(userData);
-    // console.log('All registered users:', users);
-
+router.post('/register', async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
+    const user = await createUser(username, email, password);
     res.status(200).json({
-        id: userId,
-        username: req.body.username,  
-        message: 'User registered successfully',
+      id: user.id,
+      username: user.username,
+      message: 'User registered successfully',
     });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
 });
 
 /**
@@ -77,26 +64,30 @@ router.post('/register', (req, res) => {
  *       200:
  *         description: Successful login
  */
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
+  try {
     const { username, password } = req.body;
-    // console.log('Received credentials:', username, password);
-    // console.log('All registered users:', users);
-    const user = users.find(u => u.username === username && u.password === password);
-    // console.log('Matching user:', user);
+    const user = await getUserByUsernameAndPassword(username, password);
+
     if (user) {
-        const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET_KEY, { expiresIn: '1h' });
+      const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET_KEY, {
+        expiresIn: '1h',
+      });
 
-        res.status(200).json({
-            id: user.id,
-            username: user.username,
-            token: token,
-            message: 'Successful login',
-        });
+      res.status(200).json({
+        id: user.id,
+        username: user.username,
+        token: token,
+        message: 'Successful login',
+      });
     } else {
-        res.status(401).json({ message: 'Invalid credentials' });
+      res.status(401).json({ message: 'Invalid credentials' });
     }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
 });
-
 
 /**
  * @swagger
@@ -121,11 +112,15 @@ router.post('/login', (req, res) => {
  *                   email:
  *                     type: string
  */
-router.get('/', (req, res) => {
-  res.status(200).json(users);
+router.get('/', async (req, res) => {
+  try {
+    const users = await getAllUsers();
+    res.status(200).json(users);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
 });
-
-// const users = [];
 
 /**
  * @swagger
@@ -155,21 +150,23 @@ router.get('/', (req, res) => {
  *                 email:
  *                   type: string
  */
-router.get('/:id', (req, res) => {
-    const userId = req.params.id.toString();
-    // console.log(`Requested User id:`, userId);
-    // console.log('All registered users:', users); 
-    const user = users.find((user) => user.id === userId);
-  
+router.get('/:id', async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const user = await getUserById(userId);
+
     if (user) {
-        // console.log('Found user:', user);
       res.status(200).json(user);
     } else {
-        // console.log('User not found');
       res.status(404).json({ message: 'User not found' });
     }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
 });
- /**
+
+/**
  * @swagger
  * /users/update/{id}:
  *   put:
@@ -210,24 +207,23 @@ router.get('/:id', (req, res) => {
  *                 email:
  *                   type: string
  */
-router.put('/update/:id', (req, res) => {
-const userId = req.params.id.toString();
-//  console.log(`Requested User id:`, userId);
-    // console.log('All registered users:', users); 
-const userIndex = users.findIndex((user)=>user.id===userId);
+router.put('/update/:id', async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const { username, password, email } = req.body;
+    const updatedUser = await updateUser(userId, username, password, email);
 
-if(userIndex !== -1){
-    users[userIndex].username = req.body.username || users[userIndex].username;
-    users[userIndex].password = req.body.password || users[userIndex].password;
-    users[userIndex].email = req.body.email || users[userIndex].email;
-
-    res.status(200).json(users[userIndex]);
-    //  console.log('Found user:', users);
-} else{
-    res.status(404).json({message: `User not found`});
-    //   console.log('User not found');
-}
+    if (updatedUser) {
+      res.status(200).json(updatedUser);
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
 });
+
 /**
  * @swagger
  * /users/delete/{id}:
@@ -252,21 +248,20 @@ if(userIndex !== -1){
  *                 message:
  *                   type: string
  */
-router.delete('/delete/:id', (req, res) => {
-const userId = req.params.id.toString();
-//  console.log(`Requested User id:`, userId);
-    // console.log('All registered users:', users); 
-const userIndex = users.findIndex((user)=>user.id===userId);
+router.delete('/delete/:id', async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const deleteUser = await deleteUser(userId);
 
-if(userIndex !== -1){
-    const deleteUser = users.splice(userIndex, 1);
-    res.status(200).json({message:`User ${userId} deleted successfully`,deleteUser});
- //  console.log('Found user:', users);
-} else{
-    res.status(404).json({message:`User not found`});
-        //   console.log('User not found');
-}
+    if (deleteUser) {
+      res.status(200).json({ message: `User ${userId} deleted successfully`, deleteUser });
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
 });
-// console.log('Loaded route file: users.js');
 
 module.exports = router;
