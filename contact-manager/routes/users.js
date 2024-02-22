@@ -6,9 +6,11 @@
  */
 
 const express = require('express');
+const jwt = require(`jsonwebtoken`);
 const router = express.Router();
 const users = require('../data/users');
 
+const JWT_SECRET_KEY = `sanjana123`;
 /**
  * @swagger
  * /users/register:
@@ -82,9 +84,12 @@ router.post('/login', (req, res) => {
     const user = users.find(u => u.username === username && u.password === password);
     // console.log('Matching user:', user);
     if (user) {
+        const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET_KEY, { expiresIn: '1h' });
+
         res.status(200).json({
             id: user.id,
             username: user.username,
+            token: token,
             message: 'Successful login',
         });
     } else {
