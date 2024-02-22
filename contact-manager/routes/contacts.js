@@ -7,7 +7,7 @@
 const express = require('express');
 const router = express.Router();
 const users = require('../data/users');
-const contacts = require('../data/contacts');
+// const contacts = require('../data/contacts');
 
 /**
  * @swagger
