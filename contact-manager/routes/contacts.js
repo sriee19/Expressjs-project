@@ -6,7 +6,11 @@
  */
 
 const express = require('express');
+const jwt = require(`jsonwebtoken`);
 const router = express.Router();
+const users = require('../data/users');
+
+const JWT_SECRET_KEY = `sanjana123`;
 
 /**
  * @swagger
@@ -14,6 +18,8 @@ const router = express.Router();
  *   post:
  *     summary: Create a new contact
  *     tags: [Contacts]
+ *     security:
+ *       - BearerAuth: []  
  *     requestBody:
  *       required: true
  *       content:
@@ -32,7 +38,39 @@ const router = express.Router();
  *         description: Contact created successfully
  */
 router.post('/', (req, res) => {
-    res.send('Create a new contact');
+  const token = req.headers.authorization && req.headers.authorization.split('')[1];
+
+  if(!token){
+     return res.status(401).json({message: `Unauthorised - Missing token`});
+  }
+
+  try{
+    const decodedToken = jwt.verify(token, JWT_SECRET_KEY);
+    const loggedInUserId = decodedToken.userId;
+    
+    const user = users.find((user)=>user.id === loggedInUserId);
+
+    if(user){
+      const contactData = {
+        name: req.body.name,
+        email:req.body.email,
+        phone:req.body.phone,
+      };
+      if(!user.contacts){
+        user.contacts = [];
+      }
+      user.contacts.push(contactData);
+
+      return res.status(200).json({
+        message:`Contact created successfully`,
+        contact: contactData,
+      });
+    } else{
+      return res.status(404).json({message:`User not found`});
+    }
+  } catch(error){
+    return res.status(401).json({message:`Unauthorized - Invalid token`});
+  }
   });
   
 /**
