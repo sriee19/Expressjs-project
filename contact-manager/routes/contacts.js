@@ -37,42 +37,48 @@ const JWT_SECRET_KEY = `sanjana123`;
  *       200:
  *         description: Contact created successfully
  */
-router.post('/', (req, res) => {
-  const token = req.headers.authorization && req.headers.authorization.split('')[1];
+router.post('/', authenticateToken, (req, res) => {
+  const contactData = {
+      name: req.body.name,
+      email: req.body.email,
+      phone: req.body.phone,
+  };
 
-  if(!token){
-     return res.status(401).json({message: `Unauthorised - Missing token`});
-  }
+  const loggedInUserId = req.user.id; // Extracted from the token during authentication
 
-  try{
-    const decodedToken = jwt.verify(token, JWT_SECRET_KEY);
-    const loggedInUserId = decodedToken.userId;
-    
-    const user = users.find((user)=>user.id === loggedInUserId);
+  const user = users.find((user) => user.id === loggedInUserId);
 
-    if(user){
-      const contactData = {
-        name: req.body.name,
-        email:req.body.email,
-        phone:req.body.phone,
-      };
-      if(!user.contacts){
-        user.contacts = [];
+  if (user) {
+      if (!user.contacts) {
+          user.contacts = [];
       }
       user.contacts.push(contactData);
 
-      return res.status(200).json({
-        message:`Contact created successfully`,
-        contact: contactData,
+      res.status(200).json({
+          message: 'Contact created successfully',
+          contact: contactData,
       });
-    } else{
-      return res.status(404).json({message:`User not found`});
-    }
-  } catch(error){
-    return res.status(401).json({message:`Unauthorized - Invalid token`});
+  } else {
+      res.status(404).json({ message: 'User not found' });
   }
+});
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+      return res.status(401).json({ message: 'Unauthorized' });
+  }
+
+  jwt.verify(token, JWT_SECRET_KEY, (err, user) => {
+      if (err) {
+          return res.status(403).json({ message: 'Forbidden' });
+      }
+
+      req.user = user;
+      next();
   });
-  
+}
 /**
  * @swagger
  * /contacts:
