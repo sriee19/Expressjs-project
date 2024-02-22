@@ -4,13 +4,9 @@
  *   name: Contacts
  *   description: API endpoints for managing contacts
  */
-
 const express = require('express');
-const jwt = require(`jsonwebtoken`);
 const router = express.Router();
 const users = require('../data/users');
-
-const JWT_SECRET_KEY = `sanjana123`;
 
 /**
  * @swagger
@@ -18,8 +14,6 @@ const JWT_SECRET_KEY = `sanjana123`;
  *   post:
  *     summary: Create a new contact
  *     tags: [Contacts]
- *     security:
- *       - BearerAuth: []  
  *     requestBody:
  *       required: true
  *       content:
@@ -37,48 +31,41 @@ const JWT_SECRET_KEY = `sanjana123`;
  *       200:
  *         description: Contact created successfully
  */
-router.post('/', authenticateToken, (req, res) => {
+router.post('/', (req, res) => {
   const contactData = {
-      name: req.body.name,
-      email: req.body.email,
-      phone: req.body.phone,
+    name: req.body.name,
+    email: req.body.email,
+    phone: req.body.phone,
   };
 
-  const loggedInUserId = req.user.id; // Extracted from the token during authentication
+  // Creating a default user if not found
+  const defaultUserId = "sanjana123";
+  let user = users.find((user) => user.id === defaultUserId);
 
-  const user = users.find((user) => user.id === loggedInUserId);
-
-  if (user) {
-      if (!user.contacts) {
-          user.contacts = [];
-      }
-      user.contacts.push(contactData);
-
-      res.status(200).json({
-          message: 'Contact created successfully',
-          contact: contactData,
-      });
-  } else {
-      res.status(404).json({ message: 'User not found' });
-  }
-});
-function authenticateToken(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-
-  if (!token) {
-      return res.status(401).json({ message: 'Unauthorized' });
+  if (!user) {
+    user = {
+      id: defaultUserId,
+      contacts: [],
+    };
+    users.push(user);
   }
 
-  jwt.verify(token, JWT_SECRET_KEY, (err, user) => {
-      if (err) {
-          return res.status(403).json({ message: 'Forbidden' });
-      }
+  if (!user.contacts) {
+    user.contacts = [];
+  }
 
-      req.user = user;
-      next();
+  const contactId = new Date().getTime().toString();
+  const newContact = { id: contactId, ...contactData };
+  user.contacts.push(newContact);
+
+  res.status(200).json({
+    message: 'Contact created successfully',
+    contact: newContact,
   });
-}
+});
+
+
+
 /**
  * @swagger
  * /contacts:
