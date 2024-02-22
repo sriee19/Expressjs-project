@@ -22,17 +22,17 @@ function authenticateToken(req, res, next) {
       return res.status(403).json({ message: 'Forbidden' });
     }
 
-    req.user = decoded;  // Set decoded user object to req.user
+    req.user = decoded;  
     next();
   });
 }
 
-/**
- * @swagger
- * tags:
- *   name: Users
- *   description: API endpoints for managing users
- */
+// /**
+//  * @swagger
+//  * tags:
+//  *   name: Users
+//  *   description: API endpoints for managing users
+//  */
 
 /**
  * @swagger

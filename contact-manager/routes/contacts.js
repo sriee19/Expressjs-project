@@ -33,12 +33,12 @@ function authenticateToken(req, res, next) {
   });
 }
 
-/**
- * @swagger
- * tags:
- *   name: Contacts
- *   description: API endpoints for managing contacts
- */
+// /**
+//  * @swagger
+//  * tags:
+//  *   name: Contacts
+//  *   description: API endpoints for managing contacts
+//  */
 
 /**
  * @swagger
