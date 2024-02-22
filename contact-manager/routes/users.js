@@ -1,39 +1,16 @@
+/**
+ * @swagger
+ * tags:
+ *   name: Users
+ *   description: API endpoints for managing users
+ */
+
 const express = require('express');
-const jwt = require('jsonwebtoken');
+const jwt = require(`jsonwebtoken`);
 const router = express.Router();
 const users = require('../data/users');
 
-const JWT_SECRET_KEY = 'sanjana123'; // Replace with your actual secret key
-
-/**
- * Middleware to authenticate the token.
- * Extracts the user information from the token and adds it to the request object.
- */
-function authenticateToken(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-
-  if (!token) {
-    return res.status(401).json({ message: 'Unauthorized' });
-  }
-
-  jwt.verify(token, JWT_SECRET_KEY, (err, decoded) => {
-    if (err) {
-      return res.status(403).json({ message: 'Forbidden' });
-    }
-
-    req.user = decoded;  
-    next();
-  });
-}
-
-// /**
-//  * @swagger
-//  * tags:
-//  *   name: Users
-//  *   description: API endpoints for managing users
-//  */
-
+const JWT_SECRET_KEY = `sanjana123`;
 /**
  * @swagger
  * /users/register:
@@ -58,24 +35,25 @@ function authenticateToken(req, res, next) {
  *         description: User registered successfully
  */
 function generateUserId() {
-  return new Date().getTime().toString();
+    return new Date().getTime().toString();
 }
 
 router.post('/register', (req, res) => {
-  const userId = generateUserId();
-  const userData = {
-    id: userId,
-    username: req.body.username,
-    email: req.body.email,
-    password: req.body.password
-  };
-  users.push(userData);
+    const userId = generateUserId();
+    const userData = {
+        id: userId,
+        username: req.body.username,
+        email: req.body.email,
+        password: req.body.password
+    };
+    users.push(userData);
+    // console.log('All registered users:', users);
 
-  res.status(200).json({
-    id: userId,
-    username: req.body.username,
-    message: 'User registered successfully',
-  });
+    res.status(200).json({
+        id: userId,
+        username: req.body.username,  
+        message: 'User registered successfully',
+    });
 });
 
 /**
@@ -100,22 +78,25 @@ router.post('/register', (req, res) => {
  *         description: Successful login
  */
 router.post('/login', (req, res) => {
-  const { username, password } = req.body;
-  const user = users.find(u => u.username === username && u.password === password);
+    const { username, password } = req.body;
+    // console.log('Received credentials:', username, password);
+    // console.log('All registered users:', users);
+    const user = users.find(u => u.username === username && u.password === password);
+    // console.log('Matching user:', user);
+    if (user) {
+        const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET_KEY, { expiresIn: '1h' });
 
-  if (user) {
-    const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET_KEY, { expiresIn: '1h' });
-
-    res.status(200).json({
-      id: user.id,
-      username: user.username,
-      token: token,
-      message: 'Successful login',
-    });
-  } else {
-    res.status(401).json({ message: 'Invalid credentials' });
-  }
+        res.status(200).json({
+            id: user.id,
+            username: user.username,
+            token: token,
+            message: 'Successful login',
+        });
+    } else {
+        res.status(401).json({ message: 'Invalid credentials' });
+    }
 });
+
 
 /**
  * @swagger
@@ -134,7 +115,7 @@ router.post('/login', (req, res) => {
  *                 type: object
  *                 properties:
  *                   id:
- *                     type: string
+ *                     type: integer
  *                   username:
  *                     type: string
  *                   email:
@@ -143,6 +124,8 @@ router.post('/login', (req, res) => {
 router.get('/', (req, res) => {
   res.status(200).json(users);
 });
+
+// const users = [];
 
 /**
  * @swagger
@@ -156,7 +139,7 @@ router.get('/', (req, res) => {
  *         required: true
  *         description: User ID
  *         schema:
- *           type: string
+ *           type: integer
  *     responses:
  *       200:
  *         description: Successful response
@@ -166,24 +149,27 @@ router.get('/', (req, res) => {
  *               type: object
  *               properties:
  *                 id:
- *                   type: string
+ *                   type: integer
  *                 username:
  *                   type: string
  *                 email:
  *                   type: string
  */
 router.get('/:id', (req, res) => {
-  const userId = req.params.id.toString();
-  const user = users.find((user) => user.id === userId);
-
-  if (user) {
-    res.status(200).json(user);
-  } else {
-    res.status(404).json({ message: 'User not found' });
-  }
+    const userId = req.params.id.toString();
+    // console.log(`Requested User id:`, userId);
+    // console.log('All registered users:', users); 
+    const user = users.find((user) => user.id === userId);
+  
+    if (user) {
+        // console.log('Found user:', user);
+      res.status(200).json(user);
+    } else {
+        // console.log('User not found');
+      res.status(404).json({ message: 'User not found' });
+    }
 });
-
-/**
+ /**
  * @swagger
  * /users/update/{id}:
  *   put:
@@ -195,7 +181,7 @@ router.get('/:id', (req, res) => {
  *         required: true
  *         description: User ID
  *         schema:
- *           type: string
+ *           type: integer
  *     requestBody:
  *       required: true
  *       content:
@@ -218,27 +204,30 @@ router.get('/:id', (req, res) => {
  *               type: object
  *               properties:
  *                 id:
- *                   type: string
+ *                   type: integer
  *                 username:
  *                   type: string
  *                 email:
  *                   type: string
  */
 router.put('/update/:id', (req, res) => {
-  const userId = req.params.id.toString();
-  const userIndex = users.findIndex((user) => user.id === userId);
+const userId = req.params.id.toString();
+//  console.log(`Requested User id:`, userId);
+    // console.log('All registered users:', users); 
+const userIndex = users.findIndex((user)=>user.id===userId);
 
-  if (userIndex !== -1) {
+if(userIndex !== -1){
     users[userIndex].username = req.body.username || users[userIndex].username;
     users[userIndex].password = req.body.password || users[userIndex].password;
     users[userIndex].email = req.body.email || users[userIndex].email;
 
     res.status(200).json(users[userIndex]);
-  } else {
-    res.status(404).json({ message: 'User not found' });
-  }
+    //  console.log('Found user:', users);
+} else{
+    res.status(404).json({message: `User not found`});
+    //   console.log('User not found');
+}
 });
-
 /**
  * @swagger
  * /users/delete/{id}:
@@ -251,7 +240,7 @@ router.put('/update/:id', (req, res) => {
  *         required: true
  *         description: User ID
  *         schema:
- *           type: string
+ *           type: integer
  *     responses:
  *       200:
  *         description: User deleted successfully
@@ -264,15 +253,20 @@ router.put('/update/:id', (req, res) => {
  *                   type: string
  */
 router.delete('/delete/:id', (req, res) => {
-  const userId = req.params.id.toString();
-  const userIndex = users.findIndex((user) => user.id === userId);
+const userId = req.params.id.toString();
+//  console.log(`Requested User id:`, userId);
+    // console.log('All registered users:', users); 
+const userIndex = users.findIndex((user)=>user.id===userId);
 
-  if (userIndex !== -1) {
+if(userIndex !== -1){
     const deleteUser = users.splice(userIndex, 1);
-    res.status(200).json({ message: `User ${userId} deleted successfully`, deleteUser });
-  } else {
-    res.status(404).json({ message: `User not found` });
-  }
+    res.status(200).json({message:`User ${userId} deleted successfully`,deleteUser});
+ //  console.log('Found user:', users);
+} else{
+    res.status(404).json({message:`User not found`});
+        //   console.log('User not found');
+}
 });
+// console.log('Loaded route file: users.js');
 
 module.exports = router;
