@@ -6,6 +6,33 @@ const users = require('../data/users');
 const JWT_SECRET_KEY = 'sanjana123'; 
 
 
+/**
+ * Middleware to authenticate the token.
+ * Extracts the user information from the token and adds it to the request object.
+ * @param {Request} req - The Express Request object.
+ * @param {Response} res - The Express Response object.
+ * @param {function} next - The next middleware function.
+ */
+function authenticateToken(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    console.log('Received Token', token);
+
+    if (!token) {
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    jwt.verify(token, JWT_SECRET_KEY, (err, decoded) => {
+        if (err) {
+            return res.status(403).json({ message: 'Forbidden' });
+        }
+
+        req.user = decoded;
+        next();
+    });
+}
+
 // /**
 //  * @swagger
 //  * tags:

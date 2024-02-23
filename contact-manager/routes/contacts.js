@@ -15,6 +15,9 @@ const JWT_SECRET_KEY = 'sanjana123';
 /**
  * Middleware to authenticate the token.
  * Extracts the user information from the token and adds it to the request object.
+ * @param {Request} req - The Express Request object.
+ * @param {Response} res - The Express Response object.
+ * @param {function} next - The next middleware function.
  */
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
