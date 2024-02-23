@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const router = express.Router();
 const users = require('../data/users');
 
-const JWT_SECRET_KEY = 'sanjana123'; // Replace with your actual secret key
+const JWT_SECRET_KEY = 'sanjana123'; 
 
 /**
  * Middleware to authenticate the token.

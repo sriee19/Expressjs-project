@@ -1,0 +1,59 @@
+swagger: '2.0'
+info:
+  title: Contact API
+  version: 1.0.0
+securityDefinitions:
+  apiKey:
+    type: apiKey
+    name: Authorization
+    in: header
+paths:
+  /contacts:
+    post:
+      summary: Create a new contact
+      tags:
+        - Contacts
+      security:
+        - apiKey: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                phone:
+                  type: string
+      responses:
+        200:
+          description: Contact created successfully
+    get:
+      summary: Get all contacts for the logged-in user
+      tags:
+        - Contacts
+      security:
+        - apiKey: []
+      parameters: []
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    email:
+                      type: string
+                    phone:
+                      type: string

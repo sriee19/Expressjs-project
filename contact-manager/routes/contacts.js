@@ -33,7 +33,7 @@ function authenticateToken(req, res, next) {
     next();
   });
 }
-
+ router.use(authenticateToken);
 // /**
 //  * @swagger
 //  * tags:
