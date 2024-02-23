@@ -267,6 +267,5 @@ if(userIndex !== -1){
         //   console.log('User not found');
 }
 });
-// console.log('Loaded route file: users.js');
 
 module.exports = router;
