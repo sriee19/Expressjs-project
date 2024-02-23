@@ -240,6 +240,5 @@ router.delete('/:id', (req, res) => {
     res.status(404).json({ message: 'User not found' });
   }
 });
-// console.log('Loaded route file: contacts.js');
 
 module.exports = router;
