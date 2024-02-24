@@ -2,6 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
 const users = require('../data/users');
+const User = require('../models/user');
 
 const JWT_SECRET_KEY = 'sanjana123'; 
 
@@ -67,21 +68,26 @@ function generateUserId() {
   return new Date().getTime().toString();
 }
 
-router.post('/register', (req, res) => {
+router.post('/register', async(req, res) => {
   const userId = generateUserId();
-  const userData = {
-    id: userId,
-    username: req.body.username,
-    email: req.body.email,
-    password: req.body.password
-  };
-  users.push(userData);
+  try {
+    const userData = {
+      username: req.body.username,
+      email: req.body.email,
+      password: req.body.password,
+    };
 
-  res.status(200).json({
-    id: userId,
-    username: req.body.username,
-    message: 'User registered successfully',
-  });
+    const newUser = await User.create(userData);
+
+    res.status(200).json({
+      id: newUser._id,
+      username: newUser.username,
+      message: 'User registered successfully',
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
 });
 
 /**

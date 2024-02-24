@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const swaggerUi = require('swagger-ui-express');
@@ -8,6 +9,18 @@ const app = express();
 const port = process.env.PORT || 4000;
 
 app.use(bodyParser.json());
+
+mongoose.connect('mongodb://localhost:27017/your-database-name', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
+const db = mongoose.connection;
+
+db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+db.once('open', () => {
+  console.log('Connected to MongoDB');
+});
 
 // JWT Secret Key (Replace with your actual secret key)
 const JWT_SECRET_KEY = 'sanjana123';
