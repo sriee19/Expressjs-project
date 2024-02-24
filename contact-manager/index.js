@@ -10,7 +10,7 @@ const port = process.env.PORT || 4000;
 
 app.use(bodyParser.json());
 
-mongoose.connect('mongodb://localhost:27017/your-database-name', {
+mongoose.connect('mongodb+srv://admin:admin@cluster0.yuqtc0x.mongodb.net/mycontacts-backend?retryWrites=true&w=majority&appName=Cluster0', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
