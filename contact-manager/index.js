@@ -4,8 +4,14 @@ const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerOptions = require(`./swagger`);
 
 const app = express();
+
+
+const myswaggerSpec = swaggerJsdoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(myswaggerSpec));
+
 const port = process.env.PORT || 4000;
 
 app.use(bodyParser.json());

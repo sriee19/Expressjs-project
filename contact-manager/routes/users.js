@@ -91,10 +91,13 @@ router.post('/register', async(req, res) => {
   }
 });
 
+
 /**
  * @swagger
  * /users/login:
  *   post:
+ *     security:
+ *       - bearerAuth: []  // Reference to the security definition
  *     summary: Login user
  *     tags: [Users]
  *     requestBody:

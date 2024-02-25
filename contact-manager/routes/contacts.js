@@ -64,10 +64,13 @@ console.log('Received Token', token);
 //  *   description: API endpoints for managing contacts
 //  */
 
+
 /**
  * @swagger
  * /contacts:
  *   post:
+ *     security:
+ *       - bearerAuth: []  // Reference to the security definition
  *     summary: Create a new contact
  *     tags: [Contacts]
  *     requestBody:
