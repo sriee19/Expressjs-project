@@ -26,7 +26,6 @@ router.post('/', authenticateToken, async (req, res) => {
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });
-
 const JWT_SECRET_KEY = 'sanjana123'; 
 
 

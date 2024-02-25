@@ -13,11 +13,16 @@ app.use(bodyParser.json());
 mongoose.connect('mongodb+srv://admin:admin@cluster0.yuqtc0x.mongodb.net/mycontacts-backend?retryWrites=true&w=majority&appName=Cluster0', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
+  serverSelectionTimeoutMS: 15000,
 });
+console.log("Connection sucessful")
+
 
 const db = mongoose.connection;
+db.on('error', (err) => {
+  console.error('MongoDB connection error:', err);
+});
 
-db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 db.once('open', () => {
   console.log('Connected to MongoDB');
 });
