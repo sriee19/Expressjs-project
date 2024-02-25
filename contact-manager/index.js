@@ -63,11 +63,25 @@ const options = {
       version: '1.0.0',
       description: 'API for managing contacts in a contact manager application',
     },
+    servers: [
+      {
+        url: `http://localhost:${process.env.PORT}`
+      }
+    ],
+    securityDefinitions: {
+      bearerAuth: {
+        type: 'apiKey',
+        name: 'Authorization',
+        scheme: 'bearer',
+        in: 'header',
+      },
+    },
   },
   apis: ['./routes/users.js', './routes/contacts.js'],
 };
 
 const swaggerSpec = swaggerJsdoc(options);
+// console.log(JSON.stringify(swaggerSpec, null, 2));
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 

@@ -91,15 +91,15 @@ router.post('/register', async(req, res) => {
   }
 });
 
-
 /**
  * @swagger
  * /users/login:
  *   post:
  *     security:
- *       - bearerAuth: []  // Reference to the security definition
+ *       - bearerAuth: []  # Reference to the security definition
  *     summary: Login user
- *     tags: [Users]
+ *     tags: 
+ *       - Users
  *     requestBody:
  *       required: true
  *       content:
@@ -115,6 +115,7 @@ router.post('/register', async(req, res) => {
  *       200:
  *         description: Successful login
  */
+
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 

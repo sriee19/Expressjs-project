@@ -70,7 +70,7 @@ console.log('Received Token', token);
  * /contacts:
  *   post:
  *     security:
- *       - bearerAuth: []  // Reference to the security definition
+ *       - bearerAuth: []   
  *     summary: Create a new contact
  *     tags: [Contacts]
  *     requestBody:
