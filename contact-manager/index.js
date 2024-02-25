@@ -68,17 +68,24 @@ const options = {
         url: `http://localhost:${process.env.PORT}`
       }
     ],
-    securityDefinitions: {
-      bearerAuth: {
-        type: 'apiKey',
-        name: 'Authorization',
-        scheme: 'bearer',
-        in: 'header',
+    security: [
+      {
+        bearerAuth: [], // Empty array means it's required
+      },
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
       },
     },
   },
   apis: ['./routes/users.js', './routes/contacts.js'],
 };
+
 
 const swaggerSpec = swaggerJsdoc(options);
 // console.log(JSON.stringify(swaggerSpec, null, 2));
