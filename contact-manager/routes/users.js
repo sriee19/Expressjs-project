@@ -72,6 +72,7 @@ router.post('/register', async(req, res) => {
   const userId = generateUserId();
   try {
     const userData = {
+      id: userId,
       username: req.body.username,
       email: req.body.email,
       password: req.body.password,
@@ -80,8 +81,8 @@ router.post('/register', async(req, res) => {
     const newUser = await User.create(userData);
 
     res.status(200).json({
-      id: newUser._id,
-      username: newUser.username,
+      id: userId,
+      username: req.body.username,
       message: 'User registered successfully',
     });
   } catch (error) {
@@ -94,8 +95,11 @@ router.post('/register', async(req, res) => {
  * @swagger
  * /users/login:
  *   post:
+ *     security:
+ *       - bearerAuth: []  # Reference to the security definition
  *     summary: Login user
- *     tags: [Users]
+ *     tags: 
+ *       - Users
  *     requestBody:
  *       required: true
  *       content:
@@ -111,21 +115,28 @@ router.post('/register', async(req, res) => {
  *       200:
  *         description: Successful login
  */
-router.post('/login', (req, res) => {
+
+router.post('/login', async (req, res) => {
   const { username, password } = req.body;
-  const user = users.find(u => u.username === username && u.password === password);
 
-  if (user) {
-    const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET_KEY, { expiresIn: '1h' });
+  try {
+    const user = await User.findOne({ username, password });
 
-    res.status(200).json({
-      id: user.id,
-      username: user.username,
-      token: token,
-      message: 'Successful login',
-    });
-  } else {
-    res.status(401).json({ message: 'Invalid credentials' });
+    if (user) {
+      const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET_KEY, { expiresIn: '1h' });
+
+      res.status(200).json({
+        id: user.id,
+        username: user.username,
+        token: token,
+        message: 'Successful login',
+      });
+    } else {
+      res.status(401).json({ message: 'Invalid credentials!' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 });
 
@@ -152,9 +163,16 @@ router.post('/login', (req, res) => {
  *                   email:
  *                     type: string
  */
-router.get('/', (req, res) => {
-  res.status(200).json(users);
+router.get('/', async (req, res) => {
+  try {
+    const users = await User.find();
+    res.status(200).json(users);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
 });
+
 
 /**
  * @swagger
@@ -184,16 +202,23 @@ router.get('/', (req, res) => {
  *                 email:
  *                   type: string
  */
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
   const userId = req.params.id.toString();
-  const user = users.find((user) => user.id === userId);
 
-  if (user) {
-    res.status(200).json(user);
-  } else {
-    res.status(404).json({ message: 'User not found' });
+  try {
+    const user = await User.findById(userId);
+
+    if (user) {
+      res.status(200).json(user);
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 });
+
 
 /**
  * @swagger
@@ -236,20 +261,29 @@ router.get('/:id', (req, res) => {
  *                 email:
  *                   type: string
  */
-router.put('/update/:id', (req, res) => {
+router.put('/update/:id', async (req, res) => {
   const userId = req.params.id.toString();
-  const userIndex = users.findIndex((user) => user.id === userId);
 
-  if (userIndex !== -1) {
-    users[userIndex].username = req.body.username || users[userIndex].username;
-    users[userIndex].password = req.body.password || users[userIndex].password;
-    users[userIndex].email = req.body.email || users[userIndex].email;
+  try {
+    const user = await User.findById(userId);
 
-    res.status(200).json(users[userIndex]);
-  } else {
-    res.status(404).json({ message: 'User not found' });
+    if (user) {
+      user.username = req.body.username || user.username;
+      user.password = req.body.password || user.password;
+      user.email = req.body.email || user.email;
+
+      await user.save();
+
+      res.status(200).json(user);
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 });
+
 
 /**
  * @swagger
@@ -275,15 +309,21 @@ router.put('/update/:id', (req, res) => {
  *                 message:
  *                   type: string
  */
-router.delete('/delete/:id', (req, res) => {
+router.delete('/delete/:id', async (req, res) => {
   const userId = req.params.id.toString();
-  const userIndex = users.findIndex((user) => user.id === userId);
 
-  if (userIndex !== -1) {
-    const deleteUser = users.splice(userIndex, 1);
-    res.status(200).json({ message: `User ${userId} deleted successfully`, deleteUser });
-  } else {
-    res.status(404).json({ message: `User not found` });
+  try {
+    const user = await User.findById(userId);
+
+    if (user) {
+      await user.remove();
+      res.status(200).json({ message: `User ${userId} deleted successfully` });
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 });
 

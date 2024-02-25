@@ -4,8 +4,14 @@ const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerOptions = require(`./swagger`);
 
 const app = express();
+
+
+const myswaggerSpec = swaggerJsdoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(myswaggerSpec));
+
 const port = process.env.PORT || 4000;
 
 app.use(bodyParser.json());
@@ -13,11 +19,16 @@ app.use(bodyParser.json());
 mongoose.connect('mongodb+srv://admin:admin@cluster0.yuqtc0x.mongodb.net/mycontacts-backend?retryWrites=true&w=majority&appName=Cluster0', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
+  serverSelectionTimeoutMS: 15000,
 });
+console.log("Connection sucessful")
+
 
 const db = mongoose.connection;
+db.on('error', (err) => {
+  console.error('MongoDB connection error:', err);
+});
 
-db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 db.once('open', () => {
   console.log('Connected to MongoDB');
 });
@@ -52,11 +63,25 @@ const options = {
       version: '1.0.0',
       description: 'API for managing contacts in a contact manager application',
     },
+    servers: [
+      {
+        url: `http://localhost:${process.env.PORT}`
+      }
+    ],
+    securityDefinitions: {
+      bearerAuth: {
+        type: 'apiKey',
+        name: 'Authorization',
+        scheme: 'bearer',
+        in: 'header',
+      },
+    },
   },
   apis: ['./routes/users.js', './routes/contacts.js'],
 };
 
 const swaggerSpec = swaggerJsdoc(options);
+// console.log(JSON.stringify(swaggerSpec, null, 2));
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 

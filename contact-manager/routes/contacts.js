@@ -26,7 +26,6 @@ router.post('/', authenticateToken, async (req, res) => {
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });
-
 const JWT_SECRET_KEY = 'sanjana123'; 
 
 
@@ -65,10 +64,13 @@ console.log('Received Token', token);
 //  *   description: API endpoints for managing contacts
 //  */
 
+
 /**
  * @swagger
  * /contacts:
  *   post:
+ *     security:
+ *       - bearerAuth: []   
  *     summary: Create a new contact
  *     tags: [Contacts]
  *     requestBody:
