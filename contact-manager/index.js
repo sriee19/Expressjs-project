@@ -40,7 +40,7 @@ function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
-  console.log(`Received Headers:`, req.headers);
+  // console.log(`Received Headers:`, req.headers);
   console.log(`Received Token:`, token);
 
   if (!token) {
@@ -98,7 +98,6 @@ const swaggerSpec = swaggerJsdoc(options);
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// Routes with JWT authentication
 app.use('/users', require('./routes/users'));
 app.use('/contacts', authenticateToken, require('./routes/contacts'));
 

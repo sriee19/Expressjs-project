@@ -10,22 +10,7 @@ const {
   deleteContact,
 } = require('../controllers/contactController');
 
-router.post('/', authenticateToken, async (req, res) => {
-  try {
-    const { name, email, phone } = req.body;
-    const userId = req.user.userId;
 
-    const newContact = await Contact.create({ userId, name, email, phone });
-
-    res.status(200).json({
-      message: 'Contact created successfully',
-      contact: newContact,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
-  }
-});
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY || 'sanjana123'; 
 
 
@@ -42,7 +27,7 @@ function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
-  console.log(`Received Headers:`, req.headers);
+  // console.log(`Received Headers:`, req.headers);
   console.log(`Received Token:`, token);
 
   if (!token) {

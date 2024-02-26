@@ -93,7 +93,6 @@ router.post('/register', async (req, res) => {
 
       console.log('New user created:', newUser);
 
-      // This response is sent if everything is successful
       res.status(200).json({
         id: userId,
         username: req.body.username,
@@ -127,7 +126,7 @@ router.post('/register', async (req, res) => {
  * /users/login:
  *   post:
  *     security:
- *       - bearerAuth: []  # Reference to the security definition
+ *       - bearerAuth: []  
  *     summary: Login user
  *     tags: 
  *       - Users
