@@ -151,25 +151,30 @@ router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    const user = await User.findOne({ username, password });
+    const user = await User.findOne({ username });
 
     if (user) {
-      const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET_KEY, { expiresIn: '1h' });
+      if (user.password === password) {
+        const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET_KEY, { expiresIn: '1h' });
 
-      res.status(200).json({
-        id: user.id,
-        username: user.username,
-        token: token,
-        message: 'Successful login',
-      });
+        return res.status(200).json({
+          id: user.id,
+          username: user.username,
+          token: token,
+          message: 'Successful login',
+        });
+      } else {
+        return res.status(401).json({ message: 'Incorrect password!' });
+      }
     } else {
-      res.status(401).json({ message: 'Invalid credentials!' });
+      return res.status(401).json({ message: 'User not found!' });
     }
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });
+
 
 /**
  * @swagger

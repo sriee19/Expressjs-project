@@ -140,7 +140,7 @@ router.post('/', authenticateToken, async (req, res) => {
  */
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId; 
+    const userId = req.user.userId;
     const contacts = await getContactsForUser(userId);
 
     res.status(200).json(contacts);
@@ -197,6 +197,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
   }
 });
 
+
 /**
  * @swagger
  * /contacts/{id}:
@@ -246,6 +247,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
   }
 });
 
+
 /**
  * @swagger
  * /contacts/{id}:
@@ -263,6 +265,8 @@ router.put('/:id', authenticateToken, async (req, res) => {
  *       200:
  *         description: Contact deleted successfully
  */
+
+
 router.delete('/:id', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId; 
@@ -279,4 +283,5 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });
+
 module.exports = router;
