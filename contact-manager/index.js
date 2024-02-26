@@ -12,7 +12,7 @@ const app = express();
 const myswaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(myswaggerSpec));
 
-const port = process.env.PORT || 4000;
+const port = process.env.PORT || 2000;
 
 app.use(bodyParser.json());
 
@@ -21,7 +21,7 @@ mongoose.connect('mongodb+srv://admin:admin@cluster0.yuqtc0x.mongodb.net/myconta
   useUnifiedTopology: true,
   serverSelectionTimeoutMS: 15000,
 });
-console.log("Connection sucessful")
+// console.log("Connection sucessful")
 
 
 const db = mongoose.connection;
@@ -33,27 +33,33 @@ db.once('open', () => {
   console.log('Connected to MongoDB');
 });
 
-// JWT Secret Key (Replace with your actual secret key)
-const JWT_SECRET_KEY = 'sanjana123';
+const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY || 'sanjana123';
 
 // Middleware to authenticate the token
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
+  console.log(`Received Headers:`, req.headers);
+  console.log(`Received Token:`, token);
+
   if (!token) {
+    console.error('Unauthorized: Token missing');
     return res.status(401).json({ message: 'Unauthorized' });
   }
 
   jwt.verify(token, JWT_SECRET_KEY, (err, decoded) => {
     if (err) {
+      console.error('Forbidden: Token verification error', err);
       return res.status(403).json({ message: 'Forbidden' });
     }
 
-    req.user = decoded; // Set decoded user object to req.user
+    req.user = decoded;
     next();
   });
 }
+
+module.exports = authenticateToken;
 
 const options = {
   definition: {
@@ -65,12 +71,12 @@ const options = {
     },
     servers: [
       {
-        url: `http://localhost:${process.env.PORT}`
+        url: `http://localhost:2000`,
       }
     ],
     security: [
       {
-        bearerAuth: [], // Empty array means it's required
+        bearerAuth: [], 
       },
     ],
     components: {

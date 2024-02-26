@@ -26,7 +26,7 @@ router.post('/', authenticateToken, async (req, res) => {
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });
-const JWT_SECRET_KEY = 'sanjana123'; 
+const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY || 'sanjana123'; 
 
 
 
@@ -37,26 +37,32 @@ const JWT_SECRET_KEY = 'sanjana123';
  * @param {Response} res - The Express Response object.
  * @param {function} next - The next middleware function.
  */
+// Middleware to authenticate the token
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
-console.log('Received Token', token);
+  console.log(`Received Headers:`, req.headers);
+  console.log(`Received Token:`, token);
 
   if (!token) {
+    console.error('Unauthorized: Token missing');
     return res.status(401).json({ message: 'Unauthorized' });
   }
 
   jwt.verify(token, JWT_SECRET_KEY, (err, decoded) => {
     if (err) {
+      console.error('Forbidden: Token verification error', err);
       return res.status(403).json({ message: 'Forbidden' });
     }
 
-    req.user = decoded; 
+    req.user = decoded;
     next();
   });
 }
- router.use(authenticateToken);
+
+module.exports = authenticateToken;
+
 // /**
 //  * @swagger
 //  * tags:

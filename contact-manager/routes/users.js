@@ -1,10 +1,10 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
-const users = require('../data/users');
+// const users = require('../data/users');
 const User = require('../models/user');
 
-const JWT_SECRET_KEY = 'sanjana123'; 
+const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY || 'sanjana123'; 
 
 
 /**
@@ -14,25 +14,32 @@ const JWT_SECRET_KEY = 'sanjana123';
  * @param {Response} res - The Express Response object.
  * @param {function} next - The next middleware function.
  */
+// Middleware to authenticate the token
 function authenticateToken(req, res, next) {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
 
-    console.log('Received Token', token);
+  console.log(`Received Headers:`, req.headers);
+  console.log(`Received Token:`, token);
 
-    if (!token) {
-        return res.status(401).json({ message: 'Unauthorized' });
+  if (!token) {
+    console.error('Unauthorized: Token missing');
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
+  jwt.verify(token, JWT_SECRET_KEY, (err, decoded) => {
+    if (err) {
+      console.error('Forbidden: Token verification error', err);
+      return res.status(403).json({ message: 'Forbidden' });
     }
 
-    jwt.verify(token, JWT_SECRET_KEY, (err, decoded) => {
-        if (err) {
-            return res.status(403).json({ message: 'Forbidden' });
-        }
-
-        req.user = decoded;
-        next();
-    });
+    req.user = decoded;
+    next();
+  });
 }
+
+module.exports = authenticateToken;
+
 
 // /**
 //  * @swagger
@@ -68,8 +75,9 @@ function generateUserId() {
   return new Date().getTime().toString();
 }
 
-router.post('/register', async(req, res) => {
+router.post('/register', async (req, res) => {
   const userId = generateUserId();
+
   try {
     const userData = {
       id: userId,
@@ -78,7 +86,28 @@ router.post('/register', async(req, res) => {
       password: req.body.password,
     };
 
-    const newUser = await User.create(userData);
+    console.log('Creating a new user...');
+
+    try {
+      const newUser = await User.create(userData);
+
+      console.log('New user created:', newUser);
+
+      // This response is sent if everything is successful
+      res.status(200).json({
+        id: userId,
+        username: req.body.username,
+        message: 'User registered successfully',
+      });
+    } catch (error) {
+      console.error('Error creating a new user:', error.message);
+      res.status(500).json({ message: 'Internal Server Error' });
+    }
+
+    if (!newUser) {
+      console.error('Failed to create a new user');
+      throw new Error('Failed to create a new user');
+    }
 
     res.status(200).json({
       id: userId,
@@ -87,9 +116,11 @@ router.post('/register', async(req, res) => {
     });
   } catch (error) {
     console.error(error);
+    console.error(error.stack);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });
+
 
 /**
  * @swagger
